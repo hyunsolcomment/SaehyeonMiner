@@ -1,0 +1,8 @@
+name: Saehyeon
+version: '${project.version}'
+main: me.saehyeon.miner.main.Saehyeon
+api-version: 1.16
+authors: [ Saehyeon ]
+description: 마인크래프트 광물 리젠 플러그인
+commands:
+  광물리젠:
