@@ -1,7 +1,10 @@
 package me.saehyeon.miner.event;
 
 import me.saehyeon.miner.functions.Locationf;
+import me.saehyeon.miner.manager.ErrorType;
+import me.saehyeon.miner.manager.Manager;
 import me.saehyeon.miner.manager.Miner;
+import me.saehyeon.miner.manager.UtilType;
 import me.saehyeon.miner.player.PlayerInfo;
 import me.saehyeon.miner.player.TaskType;
 import me.saehyeon.miner.region.MinerRegion;
@@ -21,13 +24,14 @@ public class onCommand implements CommandExecutor {
         Player p = (Player)sender;
         PlayerInfo pi = PlayerInfo.get(p);
 
+        MinerRegion minerRegion = null;
+
         if(label.equals("광물리젠")) {
 
             switch(args[0]) {
                 case "debug":
-
-                    MinerRegion region = MinerRegion.getByName(args[1]);
-                    p.sendMessage(region.getName()+" / "+region.getBlocks());
+                    minerRegion = MinerRegion.getByName(args[1]);
+                    p.sendMessage(minerRegion.getName()+" / "+minerRegion.getBlocks());
 
                     break;
 
@@ -43,12 +47,15 @@ public class onCommand implements CommandExecutor {
                         return false;
                     }
 
+                    /* 목록 로드 */
+                    p.sendMessage("");
+
                     MinerRegion.MinerRegions.forEach(r -> {
 
                         Location pos1 = r.getPosition()[0];
                         Location pos2 = r.getPosition()[1];
 
-                        p.sendMessage("§7"+r.getName()+"§f 지역에 §7"+r.getBlocks().size()+"개§f의 블럭이 등록되어 있습니다. ("+ Locationf.toString(pos1)+"~"+ Locationf.toString(pos2)+")");
+                        p.sendMessage(r.getName()+": \n → §f리젠블럭 갯수: §7"+r.getBlocks().size()+"개 \n §f→ 리젠시간: §7"+r.getRegenTime()+"초 \n §f→ 범위: §7"+ Locationf.toString(pos1)+" ~ "+ Locationf.toString(pos2));
 
                     });
                     break;
@@ -106,30 +113,72 @@ public class onCommand implements CommandExecutor {
 
                 case "삭제":
 
+                    /* 지역이 등록되어 있지 않음 */
                     if(!MinerRegion.contains(args[1])) {
 
-                        /* 일반 텍스트 */
-                        TextComponent message = new TextComponent("§c등록되지 않은 지역이에요. 지역 목록을 보려면 ");
-
-                        /* 클릭하여 지역 목록을 보는 컴포넌트 제작*/
-                        TextComponent listMessage = new TextComponent("§c§l§n여기를 클릭해주세요.");
-
-                        listMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/광물리젠 목록"));
-
-                        // 호버 시 텍스트
-                        TextComponent hoverMessage = new TextComponent("클릭하면 등록된 지역 목록을 볼 수 있어요.");
-                        listMessage.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { hoverMessage } ));
-
-                        /* 채팅 전송 */
-                        p.spigot().sendMessage(ChatMessageType.CHAT, new TextComponent[] { message, listMessage } );
+                        Manager.sendErrorMessage(p, ErrorType.REGION_NOT_EXIST);
 
                         return false;
                     }
 
                     // 등록되지 않은 지역임 (삭제)
-                    MinerRegion minerRegion = MinerRegion.getByName(args[1]);
+                    minerRegion = MinerRegion.getByName(args[1]);
                     minerRegion.delete();
+
                     p.sendMessage("§7"+args[1]+" §f지역을 삭제했어요.");
+                    break;
+
+                case "블럭설정":
+
+                    /* 지역이 등록되어 있지 않음 */
+                    if(!MinerRegion.contains(args[1])) {
+
+                        Manager.sendErrorMessage(p, ErrorType.REGION_NOT_EXIST);
+
+                        return false;
+                    }
+
+                    /* 블럭설정 GUI 열기 */
+                    minerRegion = MinerRegion.getByName(args[1]);
+
+                    // 지역 선택
+                    pi.setSelectedRegion( minerRegion );
+
+                    // GUI 열기
+                    Miner.openGUI(p, UtilType.BLOCK_SETTING);
+
+                    break;
+
+                case "리젠시간설정":
+
+                    /* 지역이 등록되어 있지 않음 */
+                    if(!MinerRegion.contains(args[1])) {
+
+                        Manager.sendErrorMessage(p, ErrorType.REGION_NOT_EXIST);
+
+                        return false;
+                    }
+
+                    minerRegion = MinerRegion.getByName(args[1]);
+
+                    /* 딜레이 설정 작업 시작 */
+
+                    /* 컴포넌트 만들기 */
+                    TextComponent cancelChat = new TextComponent("§c§n여기를 클릭");
+                    cancelChat.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent("클릭하여 작업을 §c취소합니다.") } ));
+                    cancelChat.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "exit"));
+
+                    // 메세지 전송
+                    p.sendMessage("");
+                    p.sendMessage("§e§l"+args[1]+"§f§l 지역의 블럭이 리젠될 초를 입력해주세요.");
+                    p.spigot().sendMessage(new TextComponent[] { new TextComponent("작업을 취소하려면 "), cancelChat, new TextComponent("§f하거나 exit를 입력해주세요.") } );
+                    p.sendMessage("§70은 리젠시간이 없는 것 입니다.");
+
+                    //p.sendMessage("작업을 취소하려면 §c§n여기를 클릭§f하거나 exit를 입력해주세요.");
+
+                    pi.setTaskType(TaskType.REGEN_TIME_SET);
+                    pi.setSelectedRegion(minerRegion);
+
                     break;
 
                 case "계속진행":

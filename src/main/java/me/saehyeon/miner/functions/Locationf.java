@@ -1,5 +1,6 @@
 package me.saehyeon.miner.functions;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ public class Locationf {
             if(minY <= standard.getY() && standard.getY() <= maxY) {
 
                 if(minZ <= standard.getZ() && standard.getZ() <= maxZ) {
-
                     return true;
 
                 }

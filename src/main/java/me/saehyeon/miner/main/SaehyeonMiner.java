@@ -1,9 +1,6 @@
 package me.saehyeon.miner.main;
 
-import me.saehyeon.miner.event.onBlock;
-import me.saehyeon.miner.event.onClick;
-import me.saehyeon.miner.event.onCommand;
-import me.saehyeon.miner.event.onJoin;
+import me.saehyeon.miner.event.*;
 import me.saehyeon.miner.manager.Miner;
 import me.saehyeon.miner.player.PlayerInfo;
 import org.bukkit.Bukkit;
@@ -24,6 +21,8 @@ public final class SaehyeonMiner extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new onJoin(),this);
         Bukkit.getPluginManager().registerEvents(new onBlock(),this);
         Bukkit.getPluginManager().registerEvents(new onClick(),this);
+        Bukkit.getPluginManager().registerEvents(new onInventory(),this);
+        Bukkit.getPluginManager().registerEvents(new onChat(),this);
 
         new Miner().load();
 

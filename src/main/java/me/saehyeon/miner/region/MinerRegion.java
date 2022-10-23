@@ -1,17 +1,24 @@
 package me.saehyeon.miner.region;
 
+import me.saehyeon.miner.functions.Locationf;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MinerRegion implements Serializable {
     public static ArrayList<MinerRegion> MinerRegions = new ArrayList<>();
 
     public String name;
-    public ArrayList<Block> blocks = new ArrayList<>();
+    public ArrayList<ItemStack> blocks = new ArrayList<>();
     Location[] position;
+    float regenSecond = 0;
 
     public MinerRegion(String name, Location pos1, Location pos2) {
         this.name       = name;
@@ -19,13 +26,13 @@ public class MinerRegion implements Serializable {
 
     }
 
-    public MinerRegion(String name, Location pos1, Location pos2, ArrayList<Block> blocks) {
+    public MinerRegion(String name, Location pos1, Location pos2, ArrayList<ItemStack> blocks) {
         this.name       = name;
         this.position   = new Location[] { pos1, pos2 };
         this.blocks     = blocks;
     }
 
-    public MinerRegion(String name, Location[] position, ArrayList<Block> blocks) {
+    public MinerRegion(String name, Location[] position, ArrayList<ItemStack> blocks) {
         this.name       = name;
         this.position   = position;
         this.blocks     = blocks;
@@ -35,7 +42,12 @@ public class MinerRegion implements Serializable {
         return name;
     }
 
-    public ArrayList<Block> getBlocks() {
+    public void setRegenTime(float second) {
+        regenSecond = second;
+    }
+
+    public float getRegenTime() { return regenSecond; }
+    public ArrayList<ItemStack> getBlocks() {
         return blocks;
     }
 
@@ -47,8 +59,30 @@ public class MinerRegion implements Serializable {
         this.position = position;
     }
 
-    public void setBlocks(ArrayList<Block> blocks) {
+    public void setBlocks(ArrayList<ItemStack> blocks) {
         this.blocks = blocks;
+    }
+
+    public void regen(Location blockLocation) {
+        Block block = blockLocation.getBlock();
+
+        if(block.getType() == Material.AIR) {
+
+            BlockData regenBlockData = blocks.get( new Random().nextInt(blocks.size()) ).getType().createBlockData();
+
+            block.setBlockData(regenBlockData);
+        }
+
+    }
+    public void regenAll() {
+
+        // 만약 리젠할 블럭이 등록되어 있지 않다면 리젠 작업 취소
+        if(blocks.isEmpty())
+            return;
+
+        /* 모든 공기 블럭 리젠 */
+        Locationf.getLocations(position[0],position[1]).forEach(this::regen);
+
     }
 
     public void delete() {
@@ -56,6 +90,25 @@ public class MinerRegion implements Serializable {
     }
     public static MinerRegion getByName(String regionName) {
         return MinerRegions.stream().filter(e -> e.name.equals(regionName)).findAny().orElse(null);
+    }
+
+    public static MinerRegion getByLocation(Location blockLocation) {
+
+        for(MinerRegion r : MinerRegion.MinerRegions) {
+
+            if(!r.getBlocks().isEmpty()) {
+
+                Location pos1 = r.getPosition()[0];
+                Location pos2 = r.getPosition()[1];
+
+                if( pos1 != null && pos2 != null && Locationf.isWithin(blockLocation,pos1,pos2) )
+                    return r;
+
+            }
+
+        }
+
+        return null;
     }
 
     public static boolean contains(String regionName) {
