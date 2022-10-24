@@ -24,7 +24,7 @@ public class onCommand implements CommandExecutor {
         Player p = (Player)sender;
         PlayerInfo pi = PlayerInfo.get(p);
 
-        MinerRegion minerRegion = null;
+        MinerRegion minerRegion;
 
         if(label.equals("광물리젠")) {
 
@@ -33,11 +33,6 @@ public class onCommand implements CommandExecutor {
                     minerRegion = MinerRegion.getByName(args[1]);
                     p.sendMessage(minerRegion.getName()+" / "+minerRegion.getBlocks());
 
-                    break;
-
-                case "불러오기":
-                    new Miner().load();
-                    p.sendMessage(".yml 파일들을 다시 불러왔어요.");
                     break;
 
                 case "목록":
@@ -202,7 +197,60 @@ public class onCommand implements CommandExecutor {
 
                     break;
 
+                case "리젠":
+
+                    MinerRegion region = MinerRegion.getByName(args[1]);
+
+                    /* 등록된 지역이 아님 */
+                    if(region == null) {
+                        Manager.sendErrorMessage(p,ErrorType.REGION_NOT_EXIST);
+                        return false;
+                    }
+
+                    /* 리젠할 블럭이 없음 */
+                    if(region.blocks.isEmpty()) {
+
+                        TextComponent clickHere = new TextComponent("§c§l§n여기를 클릭");
+
+                        clickHere.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/광물리젠 블럭설정 "+args[1]));
+                        clickHere.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent("클릭하여 §7"+args[1]+"§f 지역의 블럭을 설정합니다.") } ));
+
+                        p.spigot().sendMessage(new TextComponent[] { new TextComponent("§c"+args[1]+" 지역에 블럭이 등록되어 있지 않아요. "), clickHere, new TextComponent("§c하여 블럭을 설정할 수 있어요.") });
+
+                        return false;
+                    }
+
+                    if(args[2].equals("모든블럭")) {
+
+                        region.regenAll(false);
+                        p.sendMessage("§7"+args[1]+" §f지역에 있는 모든 블럭을 리젠했어요.");
+
+                    }
+
+                    else if(args[2].equals("공기만")) {
+
+                        region.regenAll(true);
+                        p.sendMessage("§7"+args[1]+" §f지역에 있는 공기를 리젠했어요.");
+
+                    } else {
+
+                        Manager.sendErrorMessage(p, ErrorType.INVALID_COMMAND);
+                    }
+
+                    break;
+
+                case "도움말":
+                    p.sendMessage("");
+                    p.sendMessage("§b/광물리젠 생성 [지역이름]: §f[지역이름]라는 이름을 가진 지역을 생성합니다.");
+                    p.sendMessage("§b/광물리젠 삭제 [지역이름]: §f[지역이름]라는 이름을 가진 지역을 삭제합니다.");
+                    p.sendMessage("§b/광물리젠 리젠시간설정 [지역이름] [0 또는 자연수]: §f[지역이름]라는 지역의 블럭이 파괴된 후 다시 리젠되는 시간(초)를 설정합니다. §7(0이라면 리젠시간이 없습니다.)");
+                    p.sendMessage("§b/광물리젠 블럭설정 [지역이름]: §f[지역이름]라는 지역의 리젠될 블럭을 설정합니다.");
+                    p.sendMessage("§b/광물리젠 리젠 [지역이름] [모든블럭/공기만]: §f[지역이름]라는 지역의 모든 블럭 또는 공기만을 다시 리젠합니다.");
+                    p.sendMessage("§b/광물리젠 목록: §f현재 등록된 지역의 목록을 로드합니다.");
+                    break;
+
                 default:
+                    Manager.sendErrorMessage(p, ErrorType.INVALID_COMMAND);
                     break;
             }
         }

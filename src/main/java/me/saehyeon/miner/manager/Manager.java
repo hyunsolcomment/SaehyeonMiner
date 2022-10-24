@@ -1,6 +1,7 @@
 package me.saehyeon.miner.manager;
 
 import me.saehyeon.miner.player.PlayerInfo;
+import me.saehyeon.miner.region.MinerRegion;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -11,13 +12,16 @@ import org.bukkit.entity.Player;
 public class Manager {
     public static void sendErrorMessage(Player player, ErrorType errorType) {
 
+        TextComponent message;
+        PlayerInfo pi = PlayerInfo.get(player);
+
         switch(errorType) {
 
             // 지역이 등록되어 있지 않음
             case REGION_NOT_EXIST:
 
                 /* 일반 텍스트 */
-                TextComponent message = new TextComponent("§c등록되지 않은 지역이에요. 지역 목록을 보려면 ");
+                message = new TextComponent("§c등록되지 않은 지역이에요. 지역 목록을 보려면 ");
 
                 /* 클릭하여 지역 목록을 보는 컴포넌트 제작*/
                 TextComponent listMessage = new TextComponent("§c§l§n여기를 클릭해주세요.");
@@ -34,8 +38,6 @@ public class Manager {
 
             // 첫번째, 두번째 지점이 지정되지 않음
             case INVALID_POSITION:
-
-                PlayerInfo pi = PlayerInfo.get(player);
 
                 Location pos1 = pi.getPosition()[0];
                 Location pos2 = pi.getPosition()[1];
@@ -57,6 +59,18 @@ public class Manager {
                 player.sendMessage("§c시간은 0 미만일 수 없어요.");
                 break;
 
+                // 올바르지 않은 명령어
+            case INVALID_COMMAND:
+
+                message = new TextComponent("§c§n여기를 클릭");
+                message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/광물리젠 도움말"));
+                message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent("클릭하여 도움말을 확인합니다.") }));
+
+                player.spigot().sendMessage(new TextComponent[] {
+                        new TextComponent("§c올바르지 않은 명령이에요. "), message, new TextComponent("§c하면 도움말을 확인할 수 있어요.")
+                });
+
+                break;
         }
     }
 }

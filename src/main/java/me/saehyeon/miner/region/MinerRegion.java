@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class MinerRegion implements Serializable {
@@ -47,6 +48,7 @@ public class MinerRegion implements Serializable {
     }
 
     public float getRegenTime() { return regenSecond; }
+
     public ArrayList<ItemStack> getBlocks() {
         return blocks;
     }
@@ -74,22 +76,47 @@ public class MinerRegion implements Serializable {
         }
 
     }
-    public void regenAll() {
+
+    public void regenAll(boolean regenOnlyAir) {
 
         // 만약 리젠할 블럭이 등록되어 있지 않다면 리젠 작업 취소
         if(blocks.isEmpty())
             return;
 
-        /* 모든 공기 블럭 리젠 */
-        Locationf.getLocations(position[0],position[1]).forEach(this::regen);
+        /* 모든 블럭 리젠 */
+        Locationf.getLocations(position[0],position[1]).forEach(l -> {
+
+            Material blockType = blocks.get( new Random().nextInt(blocks.size()) ).getType();
+
+            // 공기블럭만 대체한다고 했을때는 공기블럭만 다시 리젠
+            if(regenOnlyAir && l.getBlock().getType() == Material.AIR) {
+                l.getBlock().setType( blockType );
+
+            }
+
+            else if(!regenOnlyAir) {
+
+                // 모든 블럭 리젠
+                l.getBlock().setType(blockType);
+
+            }
+        });
 
     }
 
     public void delete() {
         MinerRegions.remove(this);
     }
+
     public static MinerRegion getByName(String regionName) {
         return MinerRegions.stream().filter(e -> e.name.equals(regionName)).findAny().orElse(null);
+    }
+
+    public static List<String> getAllRegionNames() {
+        List<String> result = new ArrayList<>();
+
+        MinerRegion.MinerRegions.forEach(r -> result.add(r.getName()));
+        return result;
     }
 
     public static MinerRegion getByLocation(Location blockLocation) {

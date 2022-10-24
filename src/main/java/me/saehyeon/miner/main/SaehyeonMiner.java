@@ -17,6 +17,7 @@ public final class SaehyeonMiner extends JavaPlugin {
         getDataFolder().mkdir();
 
         Bukkit.getPluginCommand("광물리젠").setExecutor(new onCommand());
+        Bukkit.getPluginCommand("광물리젠").setTabCompleter(new onTabComplete());
 
         Bukkit.getPluginManager().registerEvents(new onJoin(),this);
         Bukkit.getPluginManager().registerEvents(new onBlock(),this);

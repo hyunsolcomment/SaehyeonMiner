@@ -4,6 +4,7 @@ import me.saehyeon.miner.main.SaehyeonMiner;
 import me.saehyeon.miner.player.PlayerInfo;
 import me.saehyeon.miner.region.MinerRegion;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -59,9 +60,6 @@ public class Miner {
         /* 지역 등록 */
         MinerRegion.MinerRegions.removeIf(e -> e.getName().equals(region.getName()));
         MinerRegion.MinerRegions.add(region);
-
-        /* 지역의 광물 리젠하기 */
-        region.regenAll();
 
         player.sendMessage("§7"+region.getName()+"§f(을)를 등록했습니다.");
 

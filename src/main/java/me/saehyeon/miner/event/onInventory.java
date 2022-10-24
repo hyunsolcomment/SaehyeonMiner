@@ -5,8 +5,9 @@ import me.saehyeon.miner.manager.Manager;
 import me.saehyeon.miner.manager.UtilType;
 import me.saehyeon.miner.player.PlayerInfo;
 import me.saehyeon.miner.region.MinerRegion;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -47,12 +48,29 @@ public class onInventory implements Listener {
                     }
 
                     selectedRegion.setBlocks(blocks);
+
+                    /* 블럭설정 종료 후, 모든 변경사항을 적용할지 물어보기 */
+                    MinerRegion region = PlayerInfo.get(p).getSelectedRegion();
+
+                    TextComponent regenAll = new TextComponent("§f§l[ 모든 블럭을 다시 리젠하기 ]");
+                    TextComponent regenAir = new TextComponent("§f§l[ 공기블럭만 리젠하기 ]");
+
+                    regenAll.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/광물리젠 리젠 "+selectedRegion.getName()+" 모든블럭"));
+                    regenAll.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent("클릭하여 모든 블럭을 다시 리젠합니다.") } ));
+
+                    regenAir.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/광물리젠 리젠 "+selectedRegion.getName()+" 공기만"));
+                    regenAir.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent("클릭하여 지역 내 공기 블럭을 다시 리젠합니다.") } ));
+
+                    p.sendMessage("\n"+region.getName()+" 지역에 대한 블럭설정이 변경되었어요.");
+
+                    p.spigot().sendMessage(new TextComponent[] { regenAll, new TextComponent(" "), regenAir });
                     break;
 
             }
 
             // 작업 완료 후 플레이어의 현재 UtilType 없애기
             pi.setUtilType(null);
+            pi.setSelectedRegion(null);
         }
 
     }
